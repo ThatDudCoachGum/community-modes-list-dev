@@ -7,7 +7,7 @@ const modes = document.querySelectorAll(".mode");
 // =========================
 
 const DISCORD_WORKER =
-    "https://cml-discord-login.majorbooz22.workers.dev";
+    "https://cml-discord-login-dev.majorbooz22.workers.dev";
 
 const accountBox =
     document.getElementById("accountBox");
