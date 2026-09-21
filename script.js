@@ -132,6 +132,39 @@ modes.forEach(function(mode) {
 
 
 // =========================
+// GET MODE ID
+// =========================
+
+function getModeId(mode) {
+
+    const title =
+        mode.querySelector(
+            ".mode-title span"
+        ).textContent;
+
+
+    const match =
+        title.match(/^#(\d+)/);
+
+
+    if (!match) {
+
+        console.error(
+            "Could not find mode ID:",
+            title
+        );
+
+        return null;
+
+    }
+
+
+    return match[1];
+
+}
+
+
+// =========================
 // SUBMISSION MODAL
 // =========================
 
@@ -203,6 +236,28 @@ function openSubmissionModal(mode) {
         ).textContent;
 
 
+    const modeId =
+        getModeId(mode);
+
+
+    if (!modeId) {
+
+        content.innerHTML = `
+            <h2>${title}</h2>
+
+            <p>
+                Could not identify this mode.
+            </p>
+        `;
+
+        modal.style.display =
+            "flex";
+
+        return;
+
+    }
+
+
     content.innerHTML = `
         <h2>${title}</h2>
 
@@ -216,22 +271,22 @@ function openSubmissionModal(mode) {
         "flex";
 
 
-    const modeId =
-        mode.dataset.modeId;
-
-
     fetch(
         `${DISCORD_WORKER}/api/mode?mode_id=${modeId}`,
         {
+            method: "GET",
             credentials: "include"
         }
     )
     .then(function(response) {
 
         if (!response.ok) {
+
             throw new Error(
-                "Failed to load completions"
+                "Server returned " +
+                response.status
             );
+
         }
 
         return response.json();
@@ -247,8 +302,8 @@ function openSubmissionModal(mode) {
             <h2>${title}</h2>
 
             <p>
-                ${completions.length}
-                approved completion${completions.length === 1 ? "" : "s"}
+                ${data.count || 0}
+                approved completion${data.count === 1 ? "" : "s"}
             </p>
         `;
 
@@ -325,7 +380,7 @@ function openSubmissionModal(mode) {
 
 
 // =========================
-// CLOSE SUBMISSION MODAL
+// CLOSE MODAL
 // =========================
 
 function closeSubmissionModal() {
