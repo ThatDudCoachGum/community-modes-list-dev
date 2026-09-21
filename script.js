@@ -357,6 +357,24 @@ function openSubmissionModal(mode) {
         content.innerHTML =
             html;
 
+
+        document
+            .getElementById(
+                "startSubmissionButton"
+            )
+            .addEventListener(
+                "click",
+                function() {
+
+                    showSubmissionForm(
+                        mode,
+                        modeId,
+                        title
+                    );
+
+                }
+            );
+
     })
     .catch(function(error) {
 
@@ -375,6 +393,83 @@ function openSubmissionModal(mode) {
         `;
 
     });
+
+}
+
+
+// =========================
+// SUBMISSION FORM
+// =========================
+
+function showSubmissionForm(
+    mode,
+    modeId,
+    title
+) {
+
+    const content =
+        document.getElementById(
+            "submissionContent"
+        );
+
+
+    content.innerHTML = `
+
+        <h2>
+            Submit a Completion
+        </h2>
+
+
+        <p class="submission-description">
+            ${title}
+        </p>
+
+
+        <label for="completionDate">
+            Completion Date
+        </label>
+
+        <input
+            id="completionDate"
+            type="date"
+        >
+
+
+        <label for="verificationLink">
+            Verification Link
+        </label>
+
+        <input
+            id="verificationLink"
+            type="url"
+            placeholder="https://..."
+        >
+
+
+        <label for="submissionComments">
+            Comments
+            <span class="optional">
+                (optional)
+            </span>
+        </label>
+
+        <textarea
+            id="submissionComments"
+            placeholder="Anything you want the reviewers to know..."
+        ></textarea>
+
+
+        <button
+            id="confirmSubmissionButton"
+            type="button"
+        >
+            Confirm Submission
+        </button>
+
+
+        <p id="submissionError"></p>
+
+    `;
 
 }
 
