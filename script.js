@@ -151,127 +151,100 @@ modes.forEach(function(mode) {
 
 
 // =========================
-// SUBMISSION MENU
+// SUBMISSION MODAL
 // =========================
 
-document.querySelectorAll(".submit-button").forEach(function(button) {
+function createSubmissionModal() {
 
-    button.addEventListener("click", async function(event) {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-
-        const mode =
-            button.closest(".mode");
+    if (document.getElementById("submissionModal")) {
+        return;
+    }
 
 
-        if (!mode) {
-            return;
-        }
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "submissionModal";
 
 
-        // Get the mode number and name
+    modal.innerHTML = `
 
-        const modeTitle =
-            mode.querySelector(".mode-title span")
-            .textContent;
+        <div id="submissionOverlay"></div>
 
+        <div id="submissionWindow">
 
-        const modeMatch =
-            modeTitle.match(/^#(\d+)/);
+            <button id="submissionClose">
+                ×
+            </button>
 
+            <h2 id="submissionModeTitle">
+                Mode
+            </h2>
 
-        if (!modeMatch) {
+            <div id="submissionLeaderboard">
 
-            alert("Could not find the mode number.");
+                <p>
+                    Loading leaderboard...
+                </p>
 
-            return;
+            </div>
 
-        }
+            <button id="startSubmissionButton">
+                Submit a Completion
+            </button>
 
+        </div>
 
-        const modeId =
-            Number(modeMatch[1]);
-
-
-        // Ask the DEV Worker for leaderboard data
-
-        try {
-
-            const response =
-                await fetch(
-                    `${DISCORD_WORKER}/api/mode?mode_id=${modeId}`,
-                    {
-                        credentials: "include"
-                    }
-                );
+    `;
 
 
-            if (!response.ok) {
-
-                throw new Error(
-                    "Could not load mode information."
-                );
-
-            }
+    document.body.appendChild(modal);
 
 
-            const data =
-                await response.json();
+    // Close button
+
+    document
+        .getElementById("submissionClose")
+        .addEventListener("click", closeSubmissionModal);
 
 
-            // Build leaderboard text
+    // Clicking the dark background closes it
 
-            let leaderboardText =
-                `\n${modeTitle}\n\n`;
-
-
-            leaderboardText +=
-                `🏆 ${data.count} people have beaten this mode\n\n`;
+    document
+        .getElementById("submissionOverlay")
+        .addEventListener("click", closeSubmissionModal);
 
 
-            if (data.completions.length === 0) {
+    // Submit button
 
-                leaderboardText +=
-                    "Nobody has beaten it yet.\n";
+    document
+        .getElementById("startSubmissionButton")
+        .addEventListener(
+            "click",
+            showSubmissionForm
+        );
 
-            } else {
-
-                data.completions.forEach(
-                    function(completion, index) {
-
-                        leaderboardText +=
-                            `${index + 1}. ${completion.username}\n`;
-
-                    }
-                );
-
-            }
+}
 
 
-            leaderboardText +=
-                "\n\nA submission menu will be added here next.";
+function closeSubmissionModal() {
+
+    const modal =
+        document.getElementById("submissionModal");
+
+    if (modal) {
+
+        modal.remove();
+
+    }
+
+}
 
 
-            alert(leaderboardText);
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Could not load mode:",
-                error
-            );
+let currentModeId = null;
+let currentModeTitle = "";
 
 
-            alert(
-                "Could not load this mode's information."
-            );
-
-        }
-
-    });
-
-});
+// =========================
+// OPEN
