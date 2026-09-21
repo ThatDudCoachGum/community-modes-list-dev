@@ -151,9 +151,181 @@ modes.forEach(function(mode) {
 
 
 // =========================
-// SUBMISSION MODAL
+// SUBMISSION SYSTEM
 // =========================
 
 let currentModeId = null;
 let currentModeTitle = "";
 
+
+// =========================
+// ESCAPE HTML
+// =========================
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        text || "";
+
+    return div.innerHTML;
+
+}
+
+
+// =========================
+// CREATE SUBMISSION MENU
+// =========================
+
+function createSubmissionModal() {
+
+    // Don't create another one if it already exists
+
+    if (
+        document.getElementById("submissionModal")
+    ) {
+        return;
+    }
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "submissionModal";
+
+
+    modal.innerHTML = `
+
+        <div id="submissionOverlay"></div>
+
+        <div id="submissionWindow">
+
+            <button id="submissionClose">
+                ×
+            </button>
+
+            <h2 id="submissionModeTitle">
+                Mode
+            </h2>
+
+            <div id="submissionLeaderboard">
+
+                <p>
+                    Loading leaderboard...
+                </p>
+
+            </div>
+
+            <button id="startSubmissionButton">
+                Submit a Completion
+            </button>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(modal);
+
+
+    // Close button
+
+    document
+        .getElementById("submissionClose")
+        .addEventListener(
+            "click",
+            closeSubmissionModal
+        );
+
+
+    // Background click
+
+    document
+        .getElementById("submissionOverlay")
+        .addEventListener(
+            "click",
+            closeSubmissionModal
+        );
+
+
+    // Start submission
+
+    document
+        .getElementById("startSubmissionButton")
+        .addEventListener(
+            "click",
+            showSubmissionForm
+        );
+
+}
+
+
+// =========================
+// CLOSE SUBMISSION MENU
+// =========================
+
+function closeSubmissionModal() {
+
+    const modal =
+        document.getElementById(
+            "submissionModal"
+        );
+
+
+    if (modal) {
+
+        modal.remove();
+
+    }
+
+}
+
+
+// =========================
+// OPEN SUBMISSION MENU
+// =========================
+
+async function openSubmissionMenu(
+    modeId,
+    modeTitle
+) {
+
+    currentModeId =
+        modeId;
+
+    currentModeTitle =
+        modeTitle;
+
+
+    createSubmissionModal();
+
+
+    const modal =
+        document.getElementById(
+            "submissionModal"
+        );
+
+
+    modal.style.display =
+        "flex";
+
+
+    document.getElementById(
+        "submissionModeTitle"
+    ).textContent =
+        modeTitle;
+
+
+    const leaderboard =
+        document.getElementById(
+            "submissionLeaderboard"
+        );
+
+
+    leaderboard.innerHTML = `
+        <p>
+            Loading leaderboard...
+        </p>
