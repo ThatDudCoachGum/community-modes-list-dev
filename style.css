@@ -646,3 +646,83 @@ body.logged-in .submit-button {
 .verifier:hover {
     color: #99ccff;
 }
+/* =========================
+   SUBMISSION MODAL
+   ========================= */
+
+#submissionModal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+}
+
+#submissionOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+#submissionWindow {
+    position: relative;
+    width: 550px;
+    max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #333;
+    border-radius: 12px;
+    padding: 30px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+#submissionClose {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+#submissionClose:hover {
+    color: #aaa;
+}
+
+#submissionWindow h2 {
+    margin-top: 0;
+}
+
+#submissionWindow button {
+    border: none;
+    background: #5865F2;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#submissionWindow button:hover {
+    background: #4752C4;
+}
+
+.leaderboard-list {
+    text-align: left;
+}
+
+.leaderboard-entry {
+    background: #444;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 7px;
+}
+
+.no-completions {
+    color: #bbb;
+}
