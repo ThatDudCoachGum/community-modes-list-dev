@@ -113,7 +113,7 @@ modes.forEach(function(mode) {
         // Don't open/close when clicking verifier
 
         if (
-            event.target.classList.contains("verifier")
+            event.target.closest(".verifier")
         ) {
             return;
         }
@@ -122,7 +122,7 @@ modes.forEach(function(mode) {
         // Don't open/close when clicking Submit
 
         if (
-            event.target.classList.contains("submit-button")
+            event.target.closest(".submit-button")
         ) {
             return;
         }
@@ -158,15 +158,20 @@ let currentModeId = null;
 let currentModeTitle = "";
 
 
-// Escape HTML so usernames/text are safe to display
+// =========================
+// ESCAPE HTML
+// =========================
 
 function escapeHtml(text) {
 
-    const div = document.createElement("div");
+    const div =
+        document.createElement("div");
 
-    div.textContent = text;
+    div.textContent =
+        text == null ? "" : String(text);
 
     return div.innerHTML;
+
 }
 
 
@@ -176,20 +181,31 @@ function escapeHtml(text) {
 
 function createSubmissionModal() {
 
-    if (document.getElementById("submissionModal")) {
+    if (
+        document.getElementById(
+            "submissionModal"
+        )
+    ) {
         return;
     }
 
-    const modal = document.createElement("div");
 
-    modal.id = "submissionModal";
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "submissionModal";
+
 
     modal.innerHTML = `
         <div id="submissionOverlay"></div>
 
         <div id="submissionWindow">
 
-            <button id="submissionClose">
+            <button
+                id="submissionClose"
+                type="button"
+            >
                 ×
             </button>
 
@@ -198,20 +214,141 @@ function createSubmissionModal() {
         </div>
     `;
 
+
     document.body.appendChild(modal);
 
 
     document
         .getElementById("submissionOverlay")
-        .addEventListener("click", closeSubmissionModal);
+        .addEventListener(
+            "click",
+            closeSubmissionModal
+        );
 
 
     document
         .getElementById("submissionClose")
-        .addEventListener("click", closeSubmissionModal);
+        .addEventListener(
+            "click",
+            closeSubmissionModal
+        );
 
 }
 
 
 // =========================
-// CLOSE SUBMISSION
+// CLOSE SUBMISSION MODAL
+// =========================
+
+function closeSubmissionModal() {
+
+    const modal =
+        document.getElementById(
+            "submissionModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.style.display =
+        "none";
+
+}
+
+
+// =========================
+// OPEN SUBMISSION MENU
+// =========================
+
+async function openSubmissionMenu(
+    modeId,
+    modeTitle
+) {
+
+    currentModeId =
+        modeId;
+
+    currentModeTitle =
+        modeTitle;
+
+
+    createSubmissionModal();
+
+
+    const modal =
+        document.getElementById(
+            "submissionModal"
+        );
+
+
+    const content =
+        document.getElementById(
+            "submissionContent"
+        );
+
+
+    modal.style.display =
+        "flex";
+
+
+    content.innerHTML = `
+        <h2>
+            ${escapeHtml(modeTitle)}
+        </h2>
+
+        <p>
+            Loading completions...
+        </p>
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                DISCORD_WORKER +
+                "/api/mode?mode_id=" +
+                encodeURIComponent(modeId)
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load completions"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const completions =
+            Array.isArray(
+                data.completions
+            )
+                ? data.completions
+                : [];
+
+
+        let leaderboardHtml =
+            "";
+
+
+        if (
+            completions.length === 0
+        ) {
+
+            leaderboardHtml = `
+                <p class="no-completions">
+                    Nobody has beaten this mode yet.
+                </p>
+            `;
+
+        } else {
+
+            leaderboard
