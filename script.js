@@ -471,6 +471,212 @@ function showSubmissionForm(
 
     `;
 
+
+    document
+        .getElementById(
+            "confirmSubmissionButton"
+        )
+        .addEventListener(
+            "click",
+            function() {
+
+                submitCompletion(
+                    modeId
+                );
+
+            }
+        );
+
+}
+
+
+// =========================
+// SEND SUBMISSION
+// =========================
+
+function submitCompletion(modeId) {
+
+    const dateInput =
+        document.getElementById(
+            "completionDate"
+        );
+
+    const linkInput =
+        document.getElementById(
+            "verificationLink"
+        );
+
+    const commentsInput =
+        document.getElementById(
+            "submissionComments"
+        );
+
+    const confirmButton =
+        document.getElementById(
+            "confirmSubmissionButton"
+        );
+
+    const errorElement =
+        document.getElementById(
+            "submissionError"
+        );
+
+
+    const completionDate =
+        dateInput.value;
+
+    const verificationLink =
+        linkInput.value.trim();
+
+    const comments =
+        commentsInput.value.trim();
+
+
+    errorElement.textContent = "";
+
+
+    if (!completionDate) {
+
+        errorElement.textContent =
+            "Please enter the completion date.";
+
+        return;
+
+    }
+
+
+    if (!verificationLink) {
+
+        errorElement.textContent =
+            "Please enter a verification link.";
+
+        return;
+
+    }
+
+
+    confirmButton.disabled =
+        true;
+
+    confirmButton.textContent =
+        "Submitting...";
+
+
+    fetch(
+        `${DISCORD_WORKER}/api/submit`,
+        {
+            method: "POST",
+
+            credentials: "include",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+
+                mode_id:
+                    Number(modeId),
+
+                completion_date:
+                    completionDate,
+
+                verification_link:
+                    verificationLink,
+
+                comments:
+                    comments
+
+            })
+
+        }
+    )
+    .then(function(response) {
+
+        return response.json()
+            .then(function(data) {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "Submission failed."
+                    );
+
+                }
+
+                return data;
+
+            });
+
+    })
+    .then(function(data) {
+
+        console.log(
+            "Submission successful:",
+            data
+        );
+
+
+        const content =
+            document.getElementById(
+                "submissionContent"
+            );
+
+
+        content.innerHTML = `
+
+            <h2>
+                Submission Sent!
+            </h2>
+
+            <p class="submission-success">
+                Your submission has been sent
+                and will be reviewed!
+            </p>
+
+            <button
+                id="submissionDoneButton"
+                type="button"
+            >
+                Done
+            </button>
+
+        `;
+
+
+        document
+            .getElementById(
+                "submissionDoneButton"
+            )
+            .addEventListener(
+                "click",
+                closeSubmissionModal
+            );
+
+    })
+    .catch(function(error) {
+
+        console.error(
+            "Submission failed:",
+            error
+        );
+
+
+        errorElement.textContent =
+            error.message ||
+            "Submission failed.";
+
+
+        confirmButton.disabled =
+            false;
+
+        confirmButton.textContent =
+            "Confirm Submission";
+
+    });
+
 }
 
 
