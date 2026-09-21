@@ -44,8 +44,6 @@ fetch(DISCORD_WORKER + "/me", {
 
     if (data.loggedIn === true) {
 
-        // User is logged in
-
         document.body.classList.add("logged-in");
 
         accountBox.innerHTML = `
@@ -55,8 +53,6 @@ fetch(DISCORD_WORKER + "/me", {
         `;
 
     } else {
-
-        // User is not logged in
 
         document.body.classList.remove("logged-in");
 
@@ -69,8 +65,6 @@ fetch(DISCORD_WORKER + "/me", {
         "Discord login check failed:",
         error
     );
-
-    // Keep Submit hidden if login check fails
 
     document.body.classList.remove("logged-in");
 
@@ -150,6 +144,133 @@ modes.forEach(function(mode) {
         // Toggle this mode
 
         mode.classList.toggle("open");
+
+    });
+
+});
+
+
+// =========================
+// SUBMISSION MENU
+// =========================
+
+document.querySelectorAll(".submit-button").forEach(function(button) {
+
+    button.addEventListener("click", async function(event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+
+        const mode =
+            button.closest(".mode");
+
+
+        if (!mode) {
+            return;
+        }
+
+
+        // Get the mode number and name
+
+        const modeTitle =
+            mode.querySelector(".mode-title span")
+            .textContent;
+
+
+        const modeMatch =
+            modeTitle.match(/^#(\d+)/);
+
+
+        if (!modeMatch) {
+
+            alert("Could not find the mode number.");
+
+            return;
+
+        }
+
+
+        const modeId =
+            Number(modeMatch[1]);
+
+
+        // Ask the DEV Worker for leaderboard data
+
+        try {
+
+            const response =
+                await fetch(
+                    `${DISCORD_WORKER}/api/mode?mode_id=${modeId}`,
+                    {
+                        credentials: "include"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Could not load mode information."
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            // Build leaderboard text
+
+            let leaderboardText =
+                `\n${modeTitle}\n\n`;
+
+
+            leaderboardText +=
+                `🏆 ${data.count} people have beaten this mode\n\n`;
+
+
+            if (data.completions.length === 0) {
+
+                leaderboardText +=
+                    "Nobody has beaten it yet.\n";
+
+            } else {
+
+                data.completions.forEach(
+                    function(completion, index) {
+
+                        leaderboardText +=
+                            `${index + 1}. ${completion.username}\n`;
+
+                    }
+                );
+
+            }
+
+
+            leaderboardText +=
+                "\n\nA submission menu will be added here next.";
+
+
+            alert(leaderboardText);
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Could not load mode:",
+                error
+            );
+
+
+            alert(
+                "Could not load this mode's information."
+            );
+
+        }
 
     });
 
