@@ -26,17 +26,13 @@ fetch(DISCORD_WORKER + "/me", {
     credentials: "include"
 })
 .then(function(response) {
-
     if (!response.ok) {
         throw new Error("Login check failed");
     }
 
     return response.json();
-
 })
 .then(function(data) {
-
-    console.log("LOGIN:", data);
 
     if (data.loggedIn === true) {
 
@@ -47,14 +43,11 @@ fetch(DISCORD_WORKER + "/me", {
                 Logged In
             </span>
         `;
-
     }
 
 })
 .catch(function(error) {
-
     console.error("LOGIN ERROR:", error);
-
 });
 
 
@@ -64,10 +57,7 @@ fetch(DISCORD_WORKER + "/me", {
 
 checkReviewer();
 
-
 function checkReviewer() {
-
-    console.log("Checking reviewer status...");
 
     fetch(
         DISCORD_WORKER + "/api/reviewer/check",
@@ -78,15 +68,9 @@ function checkReviewer() {
     )
     .then(function(response) {
 
-        console.log(
-            "Reviewer response status:",
-            response.status
-        );
-
         if (!response.ok) {
             throw new Error(
-                "Reviewer endpoint returned " +
-                response.status
+                "Reviewer check failed"
             );
         }
 
@@ -95,25 +79,8 @@ function checkReviewer() {
     })
     .then(function(data) {
 
-        console.log(
-            "REVIEWER CHECK:",
-            data
-        );
-
         if (data.reviewer === true) {
-
-            console.log(
-                "Reviewer confirmed!"
-            );
-
             createReviewerButton();
-
-        } else {
-
-            console.log(
-                "Account is not a reviewer."
-            );
-
         }
 
     })
@@ -125,7 +92,6 @@ function checkReviewer() {
         );
 
     });
-
 }
 
 
@@ -153,63 +119,282 @@ function createReviewerButton() {
         "button";
 
     button.textContent =
-        "REVIEWER";
+        "🔔";
 
-    button.style.position =
-        "fixed";
-
-    button.style.top =
-        "20px";
-
-    button.style.left =
-        "20px";
-
-    button.style.zIndex =
-        "999999";
-
-    button.style.background =
-        "red";
-
-    button.style.color =
-        "white";
-
-    button.style.border =
-        "none";
-
-    button.style.padding =
-        "15px 20px";
-
-    button.style.borderRadius =
-        "8px";
-
-    button.style.fontSize =
-        "16px";
-
-    button.style.fontWeight =
-        "bold";
-
-    button.style.cursor =
-        "pointer";
-
+    button.title =
+        "Reviewer Panel";
 
     button.addEventListener(
         "click",
-        function() {
-
-            alert(
-                "Reviewer button works!"
-            );
-
-        }
+        openReviewerPanel
     );
-
 
     document.body.appendChild(button);
+}
 
-    console.log(
-        "Reviewer button created!"
-    );
 
+// =========================
+// REVIEWER PANEL
+// =========================
+
+function openReviewerPanel() {
+
+    let modal =
+        document.getElementById(
+            "reviewerModal"
+        );
+
+    if (!modal) {
+
+        modal =
+            document.createElement("div");
+
+        modal.id =
+            "reviewerModal";
+
+        modal.innerHTML = `
+
+            <div id="reviewerOverlay"></div>
+
+            <div id="reviewerWindow">
+
+                <button
+                    id="reviewerClose"
+                    type="button"
+                >
+                    ×
+                </button>
+
+                <div id="reviewerContent">
+
+                    <h2>
+                        Reviewer Panel
+                    </h2>
+
+                    <p>
+                        Loading submissions...
+                    </p>
+
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document
+            .getElementById(
+                "reviewerOverlay"
+            )
+            .addEventListener(
+                "click",
+                closeReviewerPanel
+            );
+
+        document
+            .getElementById(
+                "reviewerClose"
+            )
+            .addEventListener(
+                "click",
+                closeReviewerPanel
+            );
+    }
+
+    modal.style.display =
+        "flex";
+
+    loadReviewerSubmissions();
+}
+
+
+// =========================
+// LOAD SUBMISSIONS
+// =========================
+
+function loadReviewerSubmissions() {
+
+    const content =
+        document.getElementById(
+            "reviewerContent"
+        );
+
+    content.innerHTML = `
+        <h2>
+            Reviewer Panel
+        </h2>
+
+        <p>
+            Loading submissions...
+        </p>
+    `;
+
+    fetch(
+        DISCORD_WORKER +
+        "/api/reviewer/submissions",
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    )
+    .then(function(response) {
+
+        if (!response.ok) {
+            throw new Error(
+                "Server returned " +
+                response.status
+            );
+        }
+
+        return response.json();
+
+    })
+    .then(function(data) {
+
+        console.log(
+            "REVIEWER SUBMISSIONS:",
+            data
+        );
+
+        const submissions =
+            data.submissions || [];
+
+        let html = `
+            <h2>
+                Reviewer Panel
+            </h2>
+        `;
+
+        if (
+            submissions.length === 0
+        ) {
+
+            html += `
+                <p>
+                    No submissions to review.
+                </p>
+            `;
+
+        } else {
+
+            submissions.forEach(
+                function(submission) {
+
+                    html += `
+
+                        <div
+                            class="reviewer-submission"
+                        >
+
+                            <h3>
+                                Submission #${submission.id}
+                            </h3>
+
+                            <p>
+                                <strong>
+                                    User:
+                                </strong>
+
+                                ${submission.username}
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Mode:
+                                </strong>
+
+                                #${submission.mode_id}
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Completion Date:
+                                </strong>
+
+                                ${submission.completion_date}
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Verification:
+                                </strong>
+
+                                <a
+                                    href="${submission.verification_link}"
+                                    target="_blank"
+                                >
+                                    View Verification
+                                </a>
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Comments:
+                                </strong>
+
+                                ${
+                                    submission.comments ||
+                                    "None"
+                                }
+                            </p>
+
+                            <p>
+                                <strong>
+                                    Status:
+                                </strong>
+
+                                ${submission.status}
+                            </p>
+
+                        </div>
+
+                    `;
+                }
+            );
+        }
+
+        content.innerHTML =
+            html;
+
+    })
+    .catch(function(error) {
+
+        console.error(
+            "SUBMISSION ERROR:",
+            error
+        );
+
+        content.innerHTML = `
+            <h2>
+                Reviewer Panel
+            </h2>
+
+            <p>
+                Failed to load submissions.
+            </p>
+        `;
+
+    });
+}
+
+
+// =========================
+// CLOSE REVIEWER PANEL
+// =========================
+
+function closeReviewerPanel() {
+
+    const modal =
+        document.getElementById(
+            "reviewerModal"
+        );
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+
+    }
 }
 
 
@@ -233,19 +418,10 @@ searchBar.addEventListener(
                     ".mode-title span"
                 ).textContent.toLowerCase();
 
-            if (
+            mode.style.display =
                 modeName.includes(searchText)
-            ) {
-
-                mode.style.display =
-                    "block";
-
-            } else {
-
-                mode.style.display =
-                    "none";
-
-            }
+                    ? "block"
+                    : "none";
 
         });
 
@@ -285,11 +461,9 @@ modes.forEach(function(mode) {
                     if (
                         otherMode !== mode
                     ) {
-
                         otherMode.classList.remove(
                             "open"
                         );
-
                     }
 
                 }
