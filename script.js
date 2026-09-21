@@ -13,8 +13,6 @@ const accountBox =
     document.getElementById("accountBox");
 
 
-// Show login button immediately
-
 accountBox.innerHTML = `
     <a
         id="loginButton"
@@ -24,8 +22,6 @@ accountBox.innerHTML = `
     </a>
 `;
 
-
-// Check whether the user is already logged in
 
 fetch(DISCORD_WORKER + "/me", {
     method: "GET",
@@ -110,16 +106,11 @@ modes.forEach(function(mode) {
 
     mode.addEventListener("click", function(event) {
 
-        // Don't open/close when clicking verifier
-
         if (
             event.target.closest(".verifier")
         ) {
             return;
         }
-
-
-        // Don't open/close when clicking Submit
 
         if (
             event.target.closest(".submit-button")
@@ -127,8 +118,6 @@ modes.forEach(function(mode) {
             return;
         }
 
-
-        // Close all other modes
 
         modes.forEach(function(otherMode) {
 
@@ -140,8 +129,6 @@ modes.forEach(function(mode) {
 
         });
 
-
-        // Toggle this mode
 
         mode.classList.toggle("open");
 
@@ -251,9 +238,7 @@ function closeSubmissionModal() {
         return;
     }
 
-
-    modal.style.display =
-        "none";
+    modal.style.display = "none";
 
 }
 
@@ -335,8 +320,7 @@ async function openSubmissionMenu(
                 : [];
 
 
-        let leaderboardHtml =
-            "";
+        let leaderboardHtml = "";
 
 
         if (
@@ -351,4 +335,98 @@ async function openSubmissionMenu(
 
         } else {
 
-            leaderboard
+            leaderboardHtml = `
+                <div class="leaderboard-list">
+
+                    ${completions.map(
+                        function(completion, index) {
+
+                            return `
+                                <div class="leaderboard-entry">
+
+                                    <span
+                                        class="leaderboard-number"
+                                    >
+                                        ${index + 1}.
+                                    </span>
+
+                                    <span>
+                                        ${escapeHtml(
+                                            completion.username ||
+                                            "Unknown"
+                                        )}
+                                    </span>
+
+                                </div>
+                            `;
+
+                        }
+                    ).join("")}
+
+                </div>
+            `;
+
+        }
+
+
+        content.innerHTML = `
+            <h2>
+                ${escapeHtml(modeTitle)}
+            </h2>
+
+            <div class="leaderboard-count">
+
+                ${completions.length}
+
+                ${
+                    completions.length === 1
+                        ? "person has"
+                        : "people have"
+                }
+
+                beaten this mode
+
+            </div>
+
+            ${leaderboardHtml}
+
+            <button
+                id="startSubmissionButton"
+                type="button"
+            >
+                Submit a Completion
+            </button>
+        `;
+
+
+        document
+            .getElementById(
+                "startSubmissionButton"
+            )
+            .addEventListener(
+                "click",
+                showSubmissionForm
+            );
+
+
+    } catch (error) {
+
+        console.error(
+            "Could not load mode completions:",
+            error
+        );
+
+
+        content.innerHTML = `
+            <h2>
+                ${escapeHtml(modeTitle)}
+            </h2>
+
+            <p>
+                Could not load the completion list.
+            </p>
+
+            <button
+                id="startSubmissionButton"
+                type="button"
+           
