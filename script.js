@@ -129,19 +129,28 @@ modes.forEach(function(mode) {
     });
 
 });
+
+
 // =========================
 // SUBMISSION MODAL
 // =========================
 
 function openSubmissionModal(mode) {
 
-    let modal = document.getElementById("submissionModal");
+    let modal =
+        document.getElementById(
+            "submissionModal"
+        );
+
 
     if (!modal) {
 
-        modal = document.createElement("div");
+        modal =
+            document.createElement("div");
 
-        modal.id = "submissionModal";
+        modal.id =
+            "submissionModal";
+
 
         modal.innerHTML = `
             <div id="submissionOverlay"></div>
@@ -160,7 +169,9 @@ function openSubmissionModal(mode) {
             </div>
         `;
 
+
         document.body.appendChild(modal);
+
 
         document
             .getElementById("submissionOverlay")
@@ -169,19 +180,28 @@ function openSubmissionModal(mode) {
                 closeSubmissionModal
             );
 
+
         document
             .getElementById("submissionClose")
             .addEventListener(
                 "click",
                 closeSubmissionModal
             );
+
     }
 
+
     const content =
-        document.getElementById("submissionContent");
+        document.getElementById(
+            "submissionContent"
+        );
+
 
     const title =
-        mode.querySelector(".mode-title span").textContent;
+        mode.querySelector(
+            ".mode-title span"
+        ).textContent;
+
 
     content.innerHTML = `
         <h2>${title}</h2>
@@ -191,17 +211,136 @@ function openSubmissionModal(mode) {
         </p>
     `;
 
-    modal.style.display = "flex";
+
+    modal.style.display =
+        "flex";
+
+
+    const modeId =
+        mode.dataset.modeId;
+
+
+    fetch(
+        `${DISCORD_WORKER}/api/mode?mode_id=${modeId}`,
+        {
+            credentials: "include"
+        }
+    )
+    .then(function(response) {
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load completions"
+            );
+        }
+
+        return response.json();
+
+    })
+    .then(function(data) {
+
+        const completions =
+            data.completions || [];
+
+
+        let html = `
+            <h2>${title}</h2>
+
+            <p>
+                ${completions.length}
+                approved completion${completions.length === 1 ? "" : "s"}
+            </p>
+        `;
+
+
+        if (completions.length === 0) {
+
+            html += `
+                <p class="no-completions">
+                    Nobody has beaten this mode yet.
+                </p>
+            `;
+
+        } else {
+
+            html += `
+                <div class="leaderboard-list">
+            `;
+
+
+            completions.forEach(
+                function(completion, index) {
+
+                    html += `
+                        <div class="leaderboard-entry">
+                            ${index + 1}.
+                            ${completion.username}
+                        </div>
+                    `;
+
+                }
+            );
+
+
+            html += `
+                </div>
+            `;
+
+        }
+
+
+        html += `
+            <button
+                id="startSubmissionButton"
+                type="button"
+            >
+                Submit a Completion
+            </button>
+        `;
+
+
+        content.innerHTML =
+            html;
+
+    })
+    .catch(function(error) {
+
+        console.error(
+            "Completion loading failed:",
+            error
+        );
+
+
+        content.innerHTML = `
+            <h2>${title}</h2>
+
+            <p>
+                Failed to load completions.
+            </p>
+        `;
+
+    });
+
 }
 
+
+// =========================
+// CLOSE SUBMISSION MODAL
+// =========================
 
 function closeSubmissionModal() {
 
     const modal =
-        document.getElementById("submissionModal");
+        document.getElementById(
+            "submissionModal"
+        );
+
 
     if (modal) {
-        modal.style.display = "none";
+
+        modal.style.display =
+            "none";
+
     }
 
 }
@@ -215,21 +354,27 @@ document
     .querySelectorAll(".submit-button")
     .forEach(function(button) {
 
-        button.addEventListener("click", function(event) {
+        button.addEventListener(
+            "click",
+            function(event) {
 
-            event.preventDefault();
+                event.preventDefault();
 
-            event.stopPropagation();
+                event.stopPropagation();
 
-            const mode =
-                button.closest(".mode");
 
-            if (!mode) {
-                return;
+                const mode =
+                    button.closest(".mode");
+
+
+                if (!mode) {
+                    return;
+                }
+
+
+                openSubmissionModal(mode);
+
             }
-
-            openSubmissionModal(mode);
-
-        });
+        );
 
     });
