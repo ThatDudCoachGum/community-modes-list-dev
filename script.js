@@ -181,8 +181,6 @@ function escapeHtml(text) {
 
 function createSubmissionModal() {
 
-    // Don't create another one if it already exists
-
     if (
         document.getElementById("submissionModal")
     ) {
@@ -231,8 +229,6 @@ function createSubmissionModal() {
     document.body.appendChild(modal);
 
 
-    // Close button
-
     document
         .getElementById("submissionClose")
         .addEventListener(
@@ -241,8 +237,6 @@ function createSubmissionModal() {
         );
 
 
-    // Background click
-
     document
         .getElementById("submissionOverlay")
         .addEventListener(
@@ -250,8 +244,6 @@ function createSubmissionModal() {
             closeSubmissionModal
         );
 
-
-    // Start submission
 
     document
         .getElementById("startSubmissionButton")
@@ -329,3 +321,86 @@ async function openSubmissionMenu(
         <p>
             Loading leaderboard...
         </p>
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${DISCORD_WORKER}/api/mode?mode_id=${modeId}`,
+                {
+                    credentials: "include"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load mode information."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        let html = `
+
+            <div class="leaderboard-count">
+                🏆 ${data.count} people have beaten this mode
+            </div>
+
+        `;
+
+
+        if (
+            !data.completions ||
+            data.completions.length === 0
+        ) {
+
+            html += `
+
+                <p class="no-completions">
+                    Nobody has beaten this mode yet.
+                </p>
+
+            `;
+
+        } else {
+
+            html += `
+                <div class="leaderboard-list">
+            `;
+
+
+            data.completions.forEach(
+                function(completion, index) {
+
+                    html += `
+
+                        <div class="leaderboard-entry">
+
+                            <span class="leaderboard-number">
+                                ${index + 1}.
+                            </span>
+
+                            <span>
+                                ${escapeHtml(
+                                    completion.username
+                                )}
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }
+            );
+
+
+            html += `
+               
