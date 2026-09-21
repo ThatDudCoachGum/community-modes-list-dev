@@ -129,3 +129,107 @@ modes.forEach(function(mode) {
     });
 
 });
+// =========================
+// SUBMISSION MODAL
+// =========================
+
+function openSubmissionModal(mode) {
+
+    let modal = document.getElementById("submissionModal");
+
+    if (!modal) {
+
+        modal = document.createElement("div");
+
+        modal.id = "submissionModal";
+
+        modal.innerHTML = `
+            <div id="submissionOverlay"></div>
+
+            <div id="submissionWindow">
+
+                <button
+                    id="submissionClose"
+                    type="button"
+                >
+                    ×
+                </button>
+
+                <div id="submissionContent"></div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document
+            .getElementById("submissionOverlay")
+            .addEventListener(
+                "click",
+                closeSubmissionModal
+            );
+
+        document
+            .getElementById("submissionClose")
+            .addEventListener(
+                "click",
+                closeSubmissionModal
+            );
+    }
+
+    const content =
+        document.getElementById("submissionContent");
+
+    const title =
+        mode.querySelector(".mode-title span").textContent;
+
+    content.innerHTML = `
+        <h2>${title}</h2>
+
+        <p>
+            Loading completions...
+        </p>
+    `;
+
+    modal.style.display = "flex";
+}
+
+
+function closeSubmissionModal() {
+
+    const modal =
+        document.getElementById("submissionModal");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+}
+
+
+// =========================
+// SUBMIT BUTTONS
+// =========================
+
+document
+    .querySelectorAll(".submit-button")
+    .forEach(function(button) {
+
+        button.addEventListener("click", function(event) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            const mode =
+                button.closest(".mode");
+
+            if (!mode) {
+                return;
+            }
+
+            openSubmissionModal(mode);
+
+        });
+
+    });
